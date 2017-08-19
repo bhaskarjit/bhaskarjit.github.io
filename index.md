@@ -1,3 +1,3 @@
 ## Bhaskarjit Sarmah
 
-[Data Visualizaation](Data Visualization in R.Rmd) 
+[Data Visualizaation](https://bhaskarjit.github.io/Data Visualization in R.Rmd) 
