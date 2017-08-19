@@ -1,0 +1,146 @@
+---
+title: "Data Visualization in R (Part 1)"
+author: "Bhaskarjit Sarmah"
+date: "2 August 2017"
+output:
+  html_document: default
+  word_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+In this report I will use different datasets to plot the data to gain some meaningful instights using `ggplot2` package
+
+```{r message=FALSE, warning=FALSE}
+library(ggplot2)
+```  
+
+## Some basic plots  
+  
+First load the `mtcars` dataset 
+```{r}
+data("mtcars")
+```  
+  
+```{r}
+ggplot(mtcars, aes(x=mpg, y=0)) + geom_jitter() + scale_y_continuous(limits = c(-2,2))
+```  
+  
+The above plot is known as `stripchart` which is a univariate plot  
+```{r}
+ggplot(mtcars, aes(x = cyl, y = mpg)) + geom_point()
+```  
+  
+
+if we observe the dataset `mtcars` we will get to know that the variable `cyl` is categorical in nature but it is classified as numeric in the dataset. So we will need to tell `ggplot2` that `cyl` is a categorical variable.
+
+```{r}
+ggplot(mtcars, aes(x = factor(cyl), y = mpg)) + geom_point()
+```  
+  
+Now we can see that `ggplot2` treats `cyl` as a factor. This time the x-axis does not contain the variables like 5 or 7, it contains only the values that are present in the dataset  
+
+```{r}
+ggplot(mtcars, aes(x = wt, y = mpg, color = disp)) + geom_point()
+```  
+  
+The above plot shows relationship between `mpg` and `wt` of the car with varying displacement `disp` of the car engine shown in different colors.  
+
+```{r}
+ggplot(mtcars, aes(x = wt, y = mpg, size = disp)) + geom_point()
+```  
+  
+This plot also same as above, but this time dispalcement of the car engine is shown with varying sizes  
+  
+```{r}
+ggplot(mtcars, aes(x = wt, y = mpg, col = factor(am), fill = factor(cyl))) + 
+  geom_point(shape = 21, size = 4, alpha = 0.6)
+```  
+  
+The above plot is used whenever we need to distinguish the data points based on two categorical variables  
+
+```{r}
+ggplot(mtcars, aes(x = wt, y = mpg, col = factor(cyl))) + 
+  geom_point() + 
+  geom_smooth(method = "lm", se = FALSE) +
+  geom_smooth(aes(group = 1), method = "lm", se = FALSE, linetype = 2)
+```  
+  
+The above plot shows linear models of different subgroups `cyl` variable  
+  
+```{r} 
+val = c("#E41A1C", "#377EB8")
+lab = c("Manual", "Automatic")
+ggplot(mtcars, aes(x = factor(cyl), fill = factor(am))) +
+  geom_bar(position = "dodge") +
+  scale_x_discrete("Cylinders") + 
+  scale_y_continuous("Number") +
+  scale_fill_manual("Transmission", 
+                    values = val,
+                    labels = lab) 
+```  
+  
+Plotting several distributions in the same panel  
+```{r}
+ggplot(mtcars, aes(x=mpg, col=factor(cyl))) + geom_histogram(binwidth = 1, position = "identity") + geom_freqpoly(binwidth = 1)
+```  
+  
+In the above plot we can see the three different distributions of `cyl` variable displayed on the same panel. This plot is known as `Frequency Polygon` plot  
+  
+
+## Daimond Dataset  
+  
+Reducing the `overplotting` problem  
+```{r out.width=c('450px', '450px'), fig.show='hold'}
+ggplot(diamonds, aes(x=clarity, y=carat, color=price)) + geom_point()
+ggplot(diamonds, aes(x=clarity, y=carat, color=price)) + geom_point(alpha=0.5, position = "jitter")
+```  
+  
+
+Adding a smoothing line
+```{r message=FALSE, warning=FALSE}
+ggplot(diamonds, aes(x = carat, y = price)) + geom_point() + geom_smooth()
+```  
+```{r message=FALSE, warning=FALSE}
+ggplot(diamonds, aes(x = carat, y = price, color = clarity)) + geom_point(alpha = 0.2)
+```  
+  
+The `alpha` argument inside the geom_point() function makes the data points transparent  
+  
+```{r message=FALSE, warning=FALSE}
+ggplot(diamonds, aes(x = carat, y = price)) + geom_point(alpha = 0.2) + geom_smooth(aes(col = clarity), se = FALSE)
+```  
+  
+## Tidying the data to make a Plot
+In this problem we will use the `iris` dataset and we will rearrange the dataset to make simple but meaningful plots
+```{r message=FALSE, warning=FALSE}
+library(tidyr)
+data("iris")
+```  
+  
+Now we will tidy our `iris` dataset so that it is ready for plotting
+```{r}
+iris_tidy <- iris %>% gather(Key, Value, -Species) %>% separate(Key, c("Part", "Measure"), "\\.")  
+```  
+  
+Now our dataset is ready for plotting
+```{r}
+ggplot(iris_tidy, aes(x = Species, y = Value, col = Part)) + geom_jitter() + facet_grid(. ~ Measure)
+```  
+  
+## Bar Plots with Color Ramp
+we will use `Vocab` dataset from the `car` package  
+```{r message=FALSE, warning=FALSE}
+library(car)
+library(RColorBrewer)
+data("Vocab")
+blues <- brewer.pal(9, "Blues") # from the RColorBrewer package
+blue_range <- colorRampPalette(blues)
+ggplot(Vocab, aes(x = factor(education), fill = factor(vocabulary))) +
+  geom_bar(position = "fill") +
+  scale_fill_manual(values = blue_range(11))
+```  
+  
